@@ -1,0 +1,150 @@
+// Complete ROS2_HUMBLE Workspace DevContainer Configuration
+// Supports both elevation_mapping_cupy and digit_mujoco packages
+{
+	"name": "ROS2_HUMBLE Complete Workspace (Elevation Mapping + Digit MuJoCo)",
+	"dockerFile": "Dockerfile",
+	"context": "../",
+	"remoteUser": "ros",
+	"runArgs": [
+		"--network=host",
+		"--cap-add=SYS_PTRACE",
+		"--cap-add=SYS_NICE",
+		"--security-opt=seccomp:unconfined",
+		"--security-opt=apparmor:unconfined",
+		// X11 forwarding for GUI applications (Gazebo, RViz, MuJoCo viewer)
+		"--volume=/tmp/.X11-unix:/tmp/.X11-unix",
+		"--volume=/mnt/wslg:/mnt/wslg",
+		"--ipc=host",
+		"--pid=host",
+		// GPU access for CUDA acceleration and MuJoCo rendering
+		"--runtime=nvidia",
+		"--gpus=all",
+		"--privileged",
+		// Real-time capabilities for robot control
+		"--ulimit=rtprio=98",
+		"--ulimit=rttime=-1",
+		"--ulimit=memlock=8428281856",
+		"--name=ros2-humble-complete-workspace"
+	],
+	"containerEnv": {
+		"DISPLAY": "${localEnv:DISPLAY}",
+		"WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}",
+		"XDG_RUNTIME_DIR": "${localEnv:XDG_RUNTIME_DIR}",
+		"PULSE_SERVER": "${localEnv:PULSE_SERVER}",
+		// Software rendering fallback
+		"LIBGL_ALWAYS_SOFTWARE": "1",
+		// TurtleBot3 model for simulations
+		"TURTLEBOT3_MODEL": "waffle_realsense_depth",
+		// ROS2 specific
+		"ROS_DOMAIN_ID": "0",
+		"RMW_IMPLEMENTATION": "rmw_fastrtps_cpp"
+	},
+	"mounts": [
+		// Device access for hardware integration
+		"source=/dev,target=/dev,type=bind,consistency=cached",
+		// Optional: Uncomment for bag file storage
+		// "source=${localWorkspaceFolder}/bag_files,target=/workspace/bag_files,type=bind,consistency=cached"
+	],
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"remote.autoForwardPorts": false,
+				"remote.autoForwardPortsSource": "output",
+				"otherPortsAttributes": { "onAutoForward": "ignore" },
+				// Python configuration
+				"python.defaultInterpreterPath": "/usr/bin/python3",
+				"python.formatting.provider": "autopep8",
+				"python.linting.enabled": true,
+				"python.linting.pylintEnabled": true,
+				"python.linting.flake8Enabled": true,
+				// C++ configuration
+				"C_Cpp.default.compilerPath": "/usr/bin/gcc",
+				"C_Cpp.default.cppStandard": "c++14",
+				"C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
+				"C_Cpp.default.includePath": [
+					"/opt/ros/humble/include/**",
+					"/usr/include/**",
+					"${workspaceFolder}/**"
+				],
+				// CMake configuration
+				"cmake.buildDirectory": "${workspaceFolder}/build",
+				"cmake.installPrefix": "${workspaceFolder}/install",
+				// File associations
+				"files.associations": {
+					"*.launch": "xml",
+					"*.launch.py": "python",
+					"*.urdf": "xml",
+					"*.xacro": "xml",
+					"*.yaml": "yaml",
+					"*.msg": "plaintext",
+					"*.srv": "plaintext",
+					"*.action": "plaintext"
+				}
+			},
+			"extensions": [
+				// ROS2 Development
+				"ms-iot.vscode-ros",
+				"althack.ament-task-provider",
+				"betwo.b2-catkin-tools",
+				"smilerobotics.urdf",
+				
+				// Python Development
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"ms-python.flake8",
+				
+				// C++ Development
+				"ms-vscode.cpptools",
+				"ms-vscode.cpptools-extension-pack",
+				"ms-vscode.cmake-tools",
+				"twxs.cmake",
+				
+				// Build and Debug
+				"ms-vscode.cmake-tools",
+				"ms-azuretools.vscode-docker",
+				
+				// Documentation and Markup
+				"yzhang.markdown-all-in-one",
+				"DotJoshJohnson.xml",
+				"redhat.vscode-yaml",
+				
+				// Code Quality
+				"streetsidesoftware.code-spell-checker",
+				"zachflower.uncrustify",
+				"usernamehw.errorlens",
+				
+				// Git and Version Control
+				"mhutchie.git-graph",
+				"eamodio.gitlens",
+				
+				// Utilities
+				"alefragnani.Bookmarks",
+				"ms-vscode.live-server",
+				
+				// Jupyter for data analysis (digit_mujoco has notebooks)
+				"ms-toolsai.jupyter",
+				"ms-toolsai.jupyter-keymap",
+				"ms-toolsai.jupyter-renderers"
+			]
+		}
+	},
+	// Mount entire workspace instead of just elevation_mapping_cupy
+	"workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+	"workspaceFolder": "/workspace",
+	
+	// Post-creation commands to set up the workspace
+	"postCreateCommand": "/workspace/.devcontainer/setup.sh",
+	
+	// Features for additional functionality
+	"features": {
+		"ghcr.io/devcontainers/features/common-utils:2": {
+			"installZsh": true,
+			"configureZshAsDefaultShell": true,
+			"installOhMyZsh": true
+		},
+		"ghcr.io/devcontainers/features/git:1": {
+			"ppa": true,
+			"version": "latest"
+		}
+	}
+}
